@@ -166,3 +166,8 @@ variable "email" {
   type        = string
   default     = "cloudcrackamara@gmail.com"
 }
+
+variable "eks_cluster_name" {
+  type        = string
+  description = "production-eks-cluster"
+}
