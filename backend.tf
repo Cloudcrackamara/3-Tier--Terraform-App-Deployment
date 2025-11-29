@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
-    bucket = "penta-ops-storage"
-    key    = "tt-aws/production/terraform.tfstate"
+    bucket = "penta-deployment-bucket"
+    key    = "pentaops/prod/terraform.tfstate"
     region = "us-east-1"
   }
 }
