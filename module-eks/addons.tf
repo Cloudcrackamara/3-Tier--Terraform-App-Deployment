@@ -1,4 +1,9 @@
 provider "helm" {
+    kubernetes = {
+        host                   = aws_eks_cluster.eks.endpoint
+        cluster_ca_certificate = base64decode(aws_eks_cluster.eks.certificate_authority[0].data)
+        token                  = data.aws_eks_cluster_auth.eks.token
+    }
   kubernetes = {
     host                   = aws_eks_cluster.eks.endpoint
     cluster_ca_certificate = base64decode(aws_eks_cluster.eks.certificate_authority[0].data)
@@ -24,6 +29,23 @@ resource "helm_release" "nginx_ingress" {
   namespace        = "ingress-nginx"
   create_namespace = true
 
+resource "helm_release" "cert_manager" {
+    name       = "cert-manager"
+    repository = "https://charts.jetstack.io"
+    chart      = "cert-manager"
+    version    = "1.14.5"
+    namespace  = "cert-manager"
+    create_namespace = true
+
+    set = [
+    {
+      name  = "installCRDs"
+      value = "true"
+    }
+  ]
+    depends_on = [ helm_release.nginx_ingress ]
+}
+#==================================================
   values = [file("${path.module}/nginx-ingress-values.yaml")]
 
   depends_on = [
