@@ -79,3 +79,4 @@ jobs:
 
       - name: Deploy ArgoCD ingress rule
         run: kubectl apply -f ingress-argocd.yaml -n argocd
+ 
