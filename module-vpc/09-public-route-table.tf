@@ -19,7 +19,7 @@ resource "aws_main_route_table_association" "main" {
 }
 # add a route to the default route table to allow internet access
 resource "aws_route" "default-route-table" {
-    route_table_id = data.aws_route_table.default-route-table.id
-    destination_cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.gw.id
+  route_table_id         = data.aws_route_table.default-route-table.id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.gw.id
 }   

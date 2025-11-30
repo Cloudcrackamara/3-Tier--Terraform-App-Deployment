@@ -2,14 +2,14 @@ variable "vpc_cidrblock" {
   description = "CIDR block for the VPC"
   type        = string
   default     = "192.168.0.0/16"
-  
+
 }
 
 variable "environment" {
   description = "Environment name (e.g., dev, staging, prod)"
   type        = string
   default     = "staging"
-  
+
 }
 
 variable "create_subnet" {
@@ -22,7 +22,7 @@ variable "countsub" {
   description = "Number of subnets to create"
   type        = number
   default     = 2
-  
+
 }
 variable "create_elastic_ip" {
   description = "Flag to create Elastic IPs"

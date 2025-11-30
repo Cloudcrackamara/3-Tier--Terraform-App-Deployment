@@ -18,7 +18,7 @@ resource "aws_iam_role" "eks_node_group_role" {
     Name        = "${var.environment}-eks-node_group-role"
     Environment = var.environment
   }
-  
+
 }
 # Attach the AmazonEKSWorkerNodePolicy to the EKS node group role
 resource "aws_iam_role_policy_attachment" "eks_worker_node_policy" {
@@ -33,8 +33,8 @@ resource "aws_iam_role_policy_attachment" "eks_cni_policy" {
 }
 # Attach the AmazonEC2ContainerRegistryReadOnly policy to the EKS node group role
 resource "aws_iam_role_policy_attachment" "ec2_container_registry_policy" {
-    role       = aws_iam_role.eks_node_group_role.name
-    policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"   
+  role       = aws_iam_role.eks_node_group_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 # The AmazonEKSNodePolicy does not exist; skipping attachment.
 # Attach the AmazonEKSFargatePodExecutionRolePolicy to the EKS node group role
@@ -44,8 +44,8 @@ resource "aws_iam_role_policy_attachment" "eks_fargate_pod_execution_role_policy
 }
 # Attach the AmazonSSMManagedInstanceCore policy to the EKS node group role
 resource "aws_iam_role_policy_attachment" "ssm_managed_instance_core_policy" {
-    role       = aws_iam_role.eks_node_group_role.name
-    policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore" 
+  role       = aws_iam_role.eks_node_group_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 
 }
 resource "aws_iam_role_policy_attachment" "eks_elb_permissions" {
