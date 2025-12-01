@@ -86,6 +86,7 @@ jobs:
 
     # ------------------------------
     # Install Cert-Manager CRDs + Controller
+    # with upgrade-safe Helm command
     # ------------------------------
     - name: Install Cert-Manager
       run: |
@@ -96,8 +97,8 @@ jobs:
         helm repo add jetstack https://charts.jetstack.io
         helm repo update
 
-        # Install cert-manager into namespace
-        helm install cert-manager jetstack/cert-manager \
+        # Upgrade or Install Cert-Manager safely
+        helm upgrade --install cert-manager jetstack/cert-manager \
           --namespace cert-manager \
           --create-namespace \
           --version v1.14.2
