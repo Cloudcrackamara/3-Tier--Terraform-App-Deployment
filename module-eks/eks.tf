@@ -19,3 +19,10 @@ resource "aws_eks_cluster" "eks" {
     Environment = var.environment
   }
 }
+
+
+data "aws_lb" "nginx_ingress" {
+  tags = {
+    "kubernetes.io/service-name" = "ingress-nginx/ingress-nginx-controller"
+  }
+}
