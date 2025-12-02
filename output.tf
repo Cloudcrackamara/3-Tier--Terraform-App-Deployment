@@ -16,3 +16,4 @@ output "eks_cluster_certificate_authority" {
   description = "EKS Cluster CA data"
   value       = module.eks-deployment.cluster_certificate_authority_data
 }
+
