@@ -40,18 +40,14 @@ resource "helm_release" "nginx_ingress" {
   name      = "nginx-ingress"
   namespace = "ingress-nginx"
 
-  # Minimal chart info (Terraform requires these)
+  # Dummy values to satisfy Terraform
   repository = "https://kubernetes.github.io/ingress-nginx"
   chart      = "ingress-nginx"
+  version    = "4.12.0"
 
-  # Tell Terraform to IGNORE everything because ingress already exists
   lifecycle {
-    ignore_changes = [
-      chart,
-      repository,
-      version,
-      values,
-    ]
+    prevent_destroy = true
+    ignore_changes  = all
   }
 }
 
