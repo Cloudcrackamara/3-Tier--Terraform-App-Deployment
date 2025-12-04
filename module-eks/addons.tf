@@ -41,23 +41,25 @@ provider "helm" {
 resource "helm_release" "nginx_ingress" {
   name       = "nginx-ingress"
   namespace  = "ingress-nginx"
+  chart      = "ingress-nginx"
+  repository = "https://kubernetes.github.io/ingress-nginx"
+  version    = "4.7.1"
 
-  # Dummy chart that does nothing
-  chart      = "noop"
-  repository = "https://charts.helm.sh/incubator"
-  version    = "0.1.0"
-
+  # Do NOT install because it already exists
   create_namespace = false
+  timeout          = 1200
 
+  # This prevents Terraform from updating or reinstalling it
   lifecycle {
     ignore_changes = [
       chart,
       version,
       values,
-      repository
+      repository,
     ]
   }
 
+  # Dummy values so Terraform is satisfied
   values = [
     <<EOF
 controller:
@@ -78,5 +80,4 @@ data "aws_lb" "nginx_ingress" {
     "kubernetes.io/service-name" = "ingress-nginx/ingress-nginx-controller"
   }
 }
-
 
