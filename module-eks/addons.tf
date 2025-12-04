@@ -2,14 +2,13 @@
 # EKS DATA SOURCES
 ############################################
 
-data "aws_lb" "nginx_ingress" {
-  depends_on = [helm_release.nginx_ingress]
-
-  tags = {
-    "kubernetes.io/service-name" = "ingress-nginx/ingress-nginx-controller"
-  }
+data "aws_eks_cluster" "eks" {
+  name = aws_eks_cluster.eks.name
 }
 
+data "aws_eks_cluster_auth" "eks" {
+  name = aws_eks_cluster.eks.name
+}
 
 ############################################
 # KUBERNETES PROVIDER
@@ -75,11 +74,10 @@ EOF
 ############################################
 
 data "aws_lb" "nginx_ingress" {
-
-  # DO NOT depend on helm — this forces install!
-  # depends_on = [helm_release.nginx_ingress]   ❌ REMOVE THIS LINE
+  depends_on = [helm_release.nginx_ingress]
 
   tags = {
     "kubernetes.io/service-name" = "ingress-nginx/ingress-nginx-controller"
   }
 }
+
