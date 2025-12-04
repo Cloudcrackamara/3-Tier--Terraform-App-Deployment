@@ -53,7 +53,6 @@ resource "helm_release" "nginx_ingress" {
   disable_webhooks = true
   recreate_pods    = false
 
-  depends_on = []
 }
 
 ############################################
