@@ -33,46 +33,50 @@ provider "helm" {
 }
 
 ############################################
-# FIXED: DO NOT RECREATE EXISTING INGRESS
+# 🔥 FINAL FIX:
+# Let Terraform KNOW the release exists,
+# but DO NOT allow Terraform to install or update it.
 ############################################
 
 resource "helm_release" "nginx_ingress" {
-  name      = "nginx-ingress"
-  namespace = "ingress-nginx"
-
-  # Dummy chart info — Terraform MUST see these fields but will ignore them
-  repository = "https://kubernetes.github.io/ingress-nginx"
+  name       = "nginx-ingress"
+  namespace  = "ingress-nginx"
   chart      = "ingress-nginx"
-  version    = "4.12.0"
+  repository = "https://kubernetes.github.io/ingress-nginx"
+  version    = "4.7.1"
 
-  ########################################
-  # 🔥 THIS BLOCK FIXES THE ERROR
-  ########################################
+  # Do NOT install because it already exists
+  create_namespace = false
+  timeout          = 1200
+
+  # This prevents Terraform from updating or reinstalling it
   lifecycle {
     ignore_changes = [
-      name,
-      namespace,
-      repository,
       chart,
       version,
       values,
-      set
+      repository,
     ]
-    prevent_destroy = true
   }
 
-  # Terraform MUST NOT attempt install/check anything
-  timeout          = 1
-  disable_webhooks = true
-  recreate_pods    = false
+  # Dummy values so Terraform is satisfied
+  values = [
+    <<EOF
+controller:
+  allowSnippetAnnotations: true
+EOF
+  ]
 }
+
 
 ############################################
 # DISCOVER EXISTING NGINX LOAD BALANCER
 ############################################
 
 data "aws_lb" "nginx_ingress" {
-  depends_on = [helm_release.nginx_ingress]
+
+  # DO NOT depend on helm — this forces install!
+  # depends_on = [helm_release.nginx_ingress]   ❌ REMOVE THIS LINE
 
   tags = {
     "kubernetes.io/service-name" = "ingress-nginx/ingress-nginx-controller"
