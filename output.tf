@@ -1,6 +1,6 @@
-#############################################
+############################################
 # Clean Outputs for EKS Module
-#############################################
+############################################
 
 output "eks_cluster_name" {
   description = "EKS cluster name from the eks-deployment module"

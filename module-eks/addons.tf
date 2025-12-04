@@ -1,40 +1,78 @@
-# provider "helm" {
-#   kubernetes = {
-#     host                   = aws_eks_cluster.eks.endpoint
-#     cluster_ca_certificate = base64decode(aws_eks_cluster.eks.certificate_authority[0].data)
-#     token                  = data.aws_eks_cluster_auth.eks.token
-#   }
-# }
+############################################
+# EKS DATA SOURCES
+############################################
 
-# provider "kubernetes" {
-#   host                   = aws_eks_cluster.eks.endpoint
-#   cluster_ca_certificate = base64decode(aws_eks_cluster.eks.certificate_authority[0].data)
-#   token                  = data.aws_eks_cluster_auth.eks.token
-# }
+data "aws_eks_cluster" "eks" {
+  name = aws_eks_cluster.eks.name
+}
 
-# data "aws_eks_cluster_auth" "eks" {
-#   name = aws_eks_cluster.eks.name
-# }
+data "aws_eks_cluster_auth" "eks" {
+  name = aws_eks_cluster.eks.name
+}
 
-# resource "helm_release" "nginx_ingress" {
-#   name             = "nginx-ingress"
-#   repository       = "https://kubernetes.github.io/ingress-nginx"
-#   chart            = "ingress-nginx"
-#   version          = "4.12.0"
-#   namespace        = "ingress-nginx"
-#   create_namespace = true
+############################################
+# KUBERNETES PROVIDER
+############################################
 
-#   values = [file("${path.module}/nginx-ingress-values.yaml")]
+provider "kubernetes" {
+  host                   = data.aws_eks_cluster.eks.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.eks.certificate_authority[0].data)
+  token                  = data.aws_eks_cluster_auth.eks.token
+}
 
-#   depends_on = [
-#     aws_eks_node_group.eks_node_group
-#   ]
-# }
+############################################
+# HELM PROVIDER
+############################################
+
+provider "helm" {
+  kubernetes = {
+    host                   = data.aws_eks_cluster.eks.endpoint
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.eks.certificate_authority[0].data)
+    token                  = data.aws_eks_cluster_auth.eks.token
+  }
+}
+
+############################################
+# 🔥 FINAL FIX:
+# Let Terraform KNOW the release exists,
+# but DO NOT allow Terraform to install or update it.
+############################################
+
+resource "helm_release" "nginx_ingress" {
+  name       = "nginx-ingress"
+  namespace  = "ingress-nginx"
+  chart      = "ingress-nginx"
+  repository = "https://kubernetes.github.io/ingress-nginx"
+  version    = "4.7.1"
+
+  # Do NOT install because it already exists
+  create_namespace = false
+  timeout          = 1200
+
+  # This prevents Terraform from updating or reinstalling it
+  lifecycle {
+    ignore_changes = [
+      chart,
+      version,
+      values,
+      repository,
+    ]
+  }
+
+  # Dummy values so Terraform is satisfied
+  values = [
+    <<EOF
+controller:
+  allowSnippetAnnotations: true
+EOF
+  ]
+}
 
 
-# ############################################
-# # Discover NGINX Ingress Load Balancer
-# ############################################
+############################################
+# DISCOVER EXISTING NGINX LOAD BALANCER
+############################################
+
 data "aws_lb" "nginx_ingress" {
   depends_on = [helm_release.nginx_ingress]
 
@@ -42,3 +80,5 @@ data "aws_lb" "nginx_ingress" {
     "kubernetes.io/service-name" = "ingress-nginx/ingress-nginx-controller"
   }
 }
+
+
