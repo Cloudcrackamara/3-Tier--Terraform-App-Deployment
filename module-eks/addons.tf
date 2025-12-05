@@ -33,22 +33,20 @@ provider "helm" {
 }
 
 ############################################
-# IMPORTANT: Prevent Terraform from reinstalling ingress
+# Install NGINX Ingress Controller (THIS FIXES THE ERROR)
 ############################################
 
 resource "helm_release" "nginx_ingress" {
-  name      = "nginx-ingress"
-  namespace = "ingress-nginx"
+  name             = "nginx-ingress"
+  repository       = "https://kubernetes.github.io/ingress-nginx"
+  chart            = "ingress-nginx"
+  version          = "4.12.0"
+  namespace        = "ingress-nginx"
 
-  # Dummy values to satisfy Terraform
-  repository = "https://kubernetes.github.io/ingress-nginx"
-  chart      = "ingress-nginx"
-  version    = "4.12.0"
+  # 👇 THIS LINE FIXES THE ERROR IN GITHUB RUNNER
+  create_namespace = true
 
-  lifecycle {
-    prevent_destroy = true
-    ignore_changes  = all
-  }
+  # Remove ignore_changes until chart installs successfully
 }
 
 ############################################
@@ -61,4 +59,4 @@ data "aws_lb" "nginx_ingress" {
   tags = {
     "kubernetes.io/service-name" = "ingress-nginx/ingress-nginx-controller"
   }
-} 
+}
