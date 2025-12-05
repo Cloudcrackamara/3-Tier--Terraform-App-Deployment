@@ -33,7 +33,7 @@ provider "helm" {
 }
 
 ############################################
-# Install NGINX Ingress Controller (THIS FIXES THE ERROR)
+# Install NGINX Ingress Controller
 ############################################
 
 resource "helm_release" "nginx_ingress" {
@@ -42,21 +42,28 @@ resource "helm_release" "nginx_ingress" {
   chart            = "ingress-nginx"
   version          = "4.12.0"
   namespace        = "ingress-nginx"
-
-  # 👇 THIS LINE FIXES THE ERROR IN GITHUB RUNNER
   create_namespace = true
 
-  # Remove ignore_changes until chart installs successfully
+  values = [
+    <<EOF
+controller:
+  service:
+    type: LoadBalancer
+EOF
+  ]
 }
 
 ############################################
-# Discover NGINX Load Balancer
+# Discover NGINX Load Balancer (ALWAYS VALID)
 ############################################
+
+data "aws_lbs" "all" {}
 
 data "aws_lb" "nginx_ingress" {
   depends_on = [helm_release.nginx_ingress]
 
-  tags = {
-    "kubernetes.io/service-name" = "ingress-nginx/ingress-nginx-controller"
-  }
+  arn = element([
+    for lb in data.aws_lbs.all.load_balancers : lb.arn
+    if contains(lb.arn, "ingress")
+  ], 0)
 }
