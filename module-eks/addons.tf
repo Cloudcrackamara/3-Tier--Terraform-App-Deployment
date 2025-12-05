@@ -61,4 +61,4 @@ data "aws_lb" "nginx_ingress" {
   tags = {
     "kubernetes.io/service-name" = "ingress-nginx/ingress-nginx-controller"
   }
-}
+} 
