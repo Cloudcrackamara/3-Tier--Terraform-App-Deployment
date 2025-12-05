@@ -33,37 +33,32 @@ provider "helm" {
 }
 
 ############################################
-# Install NGINX Ingress Controller
+# IMPORTANT: Prevent Terraform from reinstalling ingress
 ############################################
 
 resource "helm_release" "nginx_ingress" {
-  name             = "nginx-ingress"
-  repository       = "https://kubernetes.github.io/ingress-nginx"
-  chart            = "ingress-nginx"
-  version          = "4.12.0"
-  namespace        = "ingress-nginx"
-  create_namespace = true
+  name      = "nginx-ingress"
+  namespace = "ingress-nginx"
 
-  values = [
-    <<EOF
-controller:
-  service:
-    type: LoadBalancer
-EOF
-  ]
+  # Dummy values to satisfy Terraform
+  repository = "https://kubernetes.github.io/ingress-nginx"
+  chart      = "ingress-nginx"
+  version    = "4.12.0"
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = all
+  }
 }
 
 ############################################
-# Discover NGINX Load Balancer (ALWAYS VALID)
+# Discover NGINX Load Balancer
 ############################################
-
-data "aws_lbs" "all" {}
 
 data "aws_lb" "nginx_ingress" {
   depends_on = [helm_release.nginx_ingress]
 
-  arn = element([
-    for lb in data.aws_lbs.all.load_balancers : lb.arn
-    if contains(lb.arn, "ingress")
-  ], 0)
-}
+  tags = {
+    "kubernetes.io/service-name" = "ingress-nginx/ingress-nginx-controller"
+  }
+} 
